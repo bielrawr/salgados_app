@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/about_screen.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -29,19 +30,19 @@ class MainDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('Sobre'),
-            onTap: () {
-              // TODO: Navegar para a tela Sobre
-              Navigator.of(context).pop();
-            },
-          ),
-          ListTile(
             leading: const Icon(Icons.mail_outline),
             title: const Text('Contato'),
             onTap: () {
               // TODO: Navegar para a tela Contato
               Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('Sobre'),
+            onTap: () {
+              Navigator.of(context).pop(); // Fecha o menu
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AboutScreen()));
             },
           ),
         ],

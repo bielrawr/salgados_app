@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../models/categoria.dart';
+import 'dart:io';
 
 class CategoriaCard extends StatelessWidget {
   final Categoria categoria;
   final VoidCallback onTap;
+  final String? imageUrl;
 
-  const CategoriaCard({super.key, required this.categoria, required this.onTap});
+  const CategoriaCard({super.key, required this.categoria, required this.onTap, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -16,27 +17,22 @@ class CategoriaCard extends StatelessWidget {
       child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        clipBehavior: Clip.antiAlias, // Garante que o carrossel não ultrapasse as bordas do card
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: categoria.imageUrls.length > 1
-                  ? CarouselSlider(
-                      options: CarouselOptions(
-                        autoPlay: true,
-                        aspectRatio: 1.0, // Mantém o card quadrado
-                        viewportFraction: 1.0, // A imagem ocupa todo o espaço do carrossel
-                      ),
-                      items: categoria.imageUrls.map((imageUrl) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return _buildImage(imageUrl);
-                          },
-                        );
-                      }).toList(),
-                    )
-                  : _buildImage(categoria.imageUrls.first),
+              child: imageUrl != null && imageUrl!.isNotEmpty
+                  ? (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://')
+                      ? Image.network(imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) =>
+                              const Center(child: Icon(Icons.image_not_supported, size: 50)))
+                      : Image.file(File(imageUrl!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) =>
+                              const Center(child: Icon(Icons.image_not_supported, size: 50))))
+                  : const Center(child: Icon(Icons.image, size: 50)),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
@@ -55,12 +51,5 @@ class CategoriaCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  // Widget auxiliar para construir a imagem, evitando repetição de código
-  Widget _buildImage(String imageUrl) {
-    return imageUrl.startsWith('http')
-        ? Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (ctx, err, st) => const Icon(Icons.error))
-        : Image.asset(imageUrl, fit: BoxFit.cover, errorBuilder: (ctx, err, st) => const Icon(Icons.error));
   }
 }

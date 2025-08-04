@@ -1,85 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/categoria.dart';
 import '../widgets/categoria_card.dart';
 import '../widgets/main_drawer.dart';
+import '../helpers/database_helper.dart';
+import '../services/category_provider.dart';
+import 'product_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  // Dados de exemplo
-  final List<Categoria> _categorias = const [
-    const Categoria(nome: 'PIZZAS', imageUrls: ['assets/images/pizzas.jpg', 'assets/images/pizza_carousel_1.jpg', 'assets/images/pizza_carousel_2.jpg']),
-    const Categoria(nome: 'SALGADOS', imageUrls: [
-      'assets/images/salgado_1.jpg',
-      'assets/images/salgado_2.jpg',
-      'assets/images/salgado_3.jpg',
-      'assets/images/salgado_4.jpg',
-      'assets/images/salgado_5.jpg',
-      'assets/images/salgado_6.jpg',
-      'assets/images/salgado_7.jpg',
-      'assets/images/salgado_8.jpg',
-      'assets/images/salgado_9.jpg',
-      'assets/images/salgado_10.jpg',
-    ]),
-    const Categoria(nome: 'Doces', imageUrls: ['https://via.placeholder.com/150']),
-    const Categoria(nome: 'Bebidas', imageUrls: ['https://via.placeholder.com/150']),
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        
         backgroundColor: const Color(0xFFFF6600),
-        toolbarHeight: 120, // Define a altura da área principal da AppBar
-        title: Padding(
-          padding: const EdgeInsets.only(top: 20.0), // Desce o logo
-          child: ClipOval(
-            child: Image.asset(
-              'assets/images/logo.jpg',
-              height: 100,
-              width: 100,
-              fit: BoxFit.cover,
-            ),
+        toolbarHeight: 120,
+        title: ClipOval(
+          child: Image.asset(
+            'assets/images/logo.jpg',
+            height: 100,
+            width: 100,
+            fit: BoxFit.cover,
           ),
         ),
         centerTitle: true,
+        automaticallyImplyLeading: false, // We handle the drawer icon manually
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60.0),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 20.0),
-            child: Opacity(
-              opacity: 0.85,
-              child: Text(
-                'Produtos Caseiros',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.bold,
+          child: Container(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Stack(
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.center,
+                  child: Opacity(
+                    opacity: 0.85,
+                    child: Text(
+                      'Produtos Caseiros',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Builder(
+                    builder: (context) => IconButton(
+                      icon: const Icon(Icons.menu, color: Colors.black),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
       drawer: const MainDrawer(),
-      body: GridView.builder(
-        padding: const EdgeInsets.fromLTRB(16.0, 64.0, 16.0, 16.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16.0,
-          mainAxisSpacing: 16.0,
-          childAspectRatio: 1.0,
-        ),
-        itemCount: _categorias.length,
-        itemBuilder: (context, index) {
-          final categoria = _categorias[index];
-          return CategoriaCard(
-            categoria: categoria,
-            onTap: () {
-              // TODO: Navegar para a tela de produtos da categoria
-              print('Categoria selecionada: ${categoria.nome}');
+      body: Consumer<CategoryProvider>(
+        builder: (context, categoryProvider, child) {
+          final categories = categoryProvider.categories;
+          if (categories.isEmpty) {
+            return const Center(child: Text('Nenhuma categoria encontrada.'));
+          }
+          return GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16.0, 64.0, 16.0, 16.0),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              childAspectRatio: 1.0,
+            ),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final categoria = categories[index];
+              final DatabaseHelper _dbHelper = DatabaseHelper(); // Instanciar aqui ou passar como dependência
+              return FutureBuilder<String?>(
+                future: _dbHelper.getRepresentativeImageForCategory(categoria.id),
+                builder: (context, snapshot) {
+                  return CategoriaCard(
+                    categoria: categoria,
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProductListScreen(categoryId: categoria.id, categoryName: categoria.nome)));
+                    },
+                    imageUrl: snapshot.data,
+                  );
+                },
+              );
             },
           );
         },

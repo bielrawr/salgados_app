@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:salgados_app/services/category_provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'screens/home_screen.dart';
+import 'services/auth_service.dart';
 
 void main() {
-  runApp(const SalgadosApp());
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthService()),
+        ChangeNotifierProvider(create: (context) => CategoryProvider()),
+      ],
+      child: const SalgadosApp(),
+    ),
+  );
 }
 
 class SalgadosApp extends StatelessWidget {
