@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../models/categoria.dart';
 import '../widgets/categoria_card.dart';
 import '../widgets/main_drawer.dart';
-import '../helpers/database_helper.dart';
 import '../services/category_provider.dart';
 import 'product_list_screen.dart';
 
@@ -79,18 +78,12 @@ class HomeScreen extends StatelessWidget {
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final categoria = categories[index];
-              final DatabaseHelper _dbHelper = DatabaseHelper(); // Instanciar aqui ou passar como dependência
-              return FutureBuilder<String?>(
-                future: _dbHelper.getRepresentativeImageForCategory(categoria.id),
-                builder: (context, snapshot) {
-                  return CategoriaCard(
-                    categoria: categoria,
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProductListScreen(categoryId: categoria.id, categoryName: categoria.nome)));
-                    },
-                    imageUrl: snapshot.data,
-                  );
+              return CategoriaCard(
+                categoria: categoria,
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProductListScreen(categoryId: categoria.id!, categoryName: categoria.nome)));
                 },
+                imageUrl: categoria.imageUrl,
               );
             },
           );

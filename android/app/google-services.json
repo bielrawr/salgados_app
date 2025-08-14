@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "536744890767",
+    "project_id": "salgadosapp-e01ce",
+    "storage_bucket": "salgadosapp-e01ce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:536744890767:android:6c95752cd398784eac7bfa",
+        "android_client_info": {
+          "package_name": "com.example.salgados_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6DjV7_4rmNnye3pLdUyTL1TZQYV6GMSM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

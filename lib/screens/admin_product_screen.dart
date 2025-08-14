@@ -1,11 +1,13 @@
 
 import 'package:flutter/material.dart';
-import '../helpers/database_helper.dart';
+import 'package:salgados_app/models/produto.dart';
+import 'package:salgados_app/services/product_firestore_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
 class AdminProductScreen extends StatefulWidget {
-  final int categoryId;
+  final String categoryId;
   final String categoryName;
 
   const AdminProductScreen({super.key, required this.categoryId, required this.categoryName});
@@ -15,137 +17,173 @@ class AdminProductScreen extends StatefulWidget {
 }
 
 class _AdminProductScreenState extends State<AdminProductScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  List<Map<String, dynamic>> _products = [];
+  final ProductFirestoreService _productFirestoreService = ProductFirestoreService();
+  List<Produto> _products = [];
   final TextEditingController _productNameController = TextEditingController();
   final TextEditingController _productDescriptionController = TextEditingController();
   final TextEditingController _productPriceController = TextEditingController();
-  XFile? _pickedImage;
+  XFile? _selectedImageFile;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _listenToProducts();
   }
 
-  Future<void> _loadProducts() async {
-    final products = await _dbHelper.getProdutosPorCategoria(widget.categoryId);
-    setState(() {
-      _products = products;
+  void _listenToProducts() {
+    _productFirestoreService.getProductsByCategory(widget.categoryId).listen((products) {
+      setState(() {
+        _products = products;
+      });
     });
   }
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      _pickedImage = image;
-    });
+
+    if (image != null) {
+      setState(() {
+        _selectedImageFile = image;
+      });
+    }
   }
 
-  void _showAddEditProductDialog({Map<String, dynamic>? product}) {
+  void _showAddEditProductDialog({Produto? product}) {
+    String? _dialogImageUrl;
     if (product != null) {
-      _productNameController.text = product['nome'];
-      _productDescriptionController.text = product['descricao'];
-      _productPriceController.text = product['preco'].toString();
-      _pickedImage = null; // Clear image when editing, user can pick new one
+      _productNameController.text = product.nome;
+      _productDescriptionController.text = product.descricao;
+      _productPriceController.text = product.preco.toString();
+      _dialogImageUrl = product.imageUrls.isNotEmpty ? product.imageUrls.first : null;
+      _selectedImageFile = null;
     } else {
       _productNameController.clear();
       _productDescriptionController.clear();
       _productPriceController.clear();
-      _pickedImage = null;
+      _dialogImageUrl = null;
+      _selectedImageFile = null;
     }
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(product == null ? 'Adicionar Produto' : 'Editar Produto'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextField(
-                  controller: _productNameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Nome do Produto',
-                  ),
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(product == null ? 'Adicionar Produto' : 'Editar Produto'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    TextField(
+                      controller: _productNameController,
+                      decoration: const InputDecoration(
+                        hintText: 'Nome do Produto',
+                      ),
+                    ),
+                    TextField(
+                      controller: _productDescriptionController,
+                      decoration: const InputDecoration(
+                        hintText: 'Descrição do Produto',
+                      ),
+                    ),
+                    TextField(
+                      controller: _productPriceController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        hintText: 'Preço',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _selectedImageFile != null
+                        ? Image.file(File(_selectedImageFile!.path), height: 100)
+                        : (_dialogImageUrl != null
+                            ? Image.network(_dialogImageUrl!, height: 100)
+                            : const Text('Nenhuma imagem selecionada')),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await _pickImage();
+                        setState(() {});
+                      },
+                      child: const Text('Selecionar Imagem'),
+                    ),
+                  ],
                 ),
-                TextField(
-                  controller: _productDescriptionController,
-                  decoration: const InputDecoration(
-                    hintText: 'Descrição do Produto',
-                  ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancelar'),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
                 ),
-                TextField(
-                  controller: _productPriceController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    hintText: 'Preço',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _pickedImage != null
-                    ? Image.file(File(_pickedImage!.path), height: 100)
-                    : (product != null && product['caminho_imagem'] != null
-                        ? Image.file(File(product['caminho_imagem']), height: 100)
-                        : const Text('Nenhuma imagem selecionada')),
                 ElevatedButton(
-                  onPressed: _pickImage,
-                  child: const Text('Selecionar Imagem'),
+                  child: Text(product == null ? 'Adicionar' : 'Salvar'),
+                  onPressed: () {
+                    if (_productNameController.text.isNotEmpty &&
+                        _productPriceController.text.isNotEmpty) {
+                      final productName = _productNameController.text;
+                      final productDescription = _productDescriptionController.text;
+                      final newPrice = double.parse(_productPriceController.text);
+                      final selectedImage = _selectedImageFile;
+                      final existingImageUrl = _dialogImageUrl;
+                      final existingProduct = product;
+
+                      Navigator.of(dialogContext).pop();
+
+                      Future.microtask(() async {
+                        String? finalImageUrl;
+
+                        if (selectedImage != null) {
+                          final storageRef = FirebaseStorage.instance.ref();
+                          final imagesRef = storageRef.child('product_images/${DateTime.now().millisecondsSinceEpoch}_${selectedImage.name}');
+                          try {
+                            await imagesRef.putFile(File(selectedImage.path));
+                            finalImageUrl = await imagesRef.getDownloadURL();
+                          } on FirebaseException catch (e) {
+                            print('Error uploading image: $e');
+                          }
+                        } else {
+                          finalImageUrl = existingImageUrl;
+                        }
+
+                        final List<String> imageUrls = finalImageUrl != null ? [finalImageUrl] : [];
+
+                        if (existingProduct == null) {
+                          final newProduct = Produto(
+                            nome: productName,
+                            descricao: productDescription,
+                            preco: newPrice,
+                            categoryId: widget.categoryId,
+                            imageUrls: imageUrls,
+                          );
+                          await _productFirestoreService.addProduct(newProduct);
+                        } else {
+                          final updatedProduct = Produto(
+                            id: existingProduct.id,
+                            nome: productName,
+                            descricao: productDescription,
+                            preco: newPrice,
+                            categoryId: widget.categoryId,
+                            imageUrls: imageUrls,
+                          );
+                          await _productFirestoreService.updateProduct(updatedProduct);
+                        }
+                      });
+                    }
+                  },
                 ),
               ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              child: Text(product == null ? 'Adicionar' : 'Salvar'),
-              onPressed: () async {
-                if (_productNameController.text.isNotEmpty &&
-                    _productPriceController.text.isNotEmpty) {
-                  final newProduct = {
-                    'nome': _productNameController.text,
-                    'descricao': _productDescriptionController.text,
-                    'preco': double.parse(_productPriceController.text),
-                    'categoria_id': widget.categoryId,
-                  };
-
-                  int productId;
-                  if (product == null) {
-                    productId = await _dbHelper.salvarProduto(newProduct);
-                  } else {
-                    productId = product['id'];
-                    await _dbHelper.atualizarProduto({'id': productId, ...newProduct});
-                  }
-
-                  if (_pickedImage != null) {
-                    // Save image path to database
-                    await _dbHelper.salvarImagemProduto({
-                      'produto_id': productId,
-                      'caminho_imagem': _pickedImage!.path,
-                    });
-                  }
-
-                  _loadProducts();
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
+            );
+          },
         );
       },
     );
   }
 
-  Future<void> _deleteProduct(int id) async {
-    await _dbHelper.deletarProduto(id);
-    _loadProducts();
+  Future<void> _deleteProduct(String id) async {
+    await _productFirestoreService.deleteProduct(id);
   }
 
   @override
@@ -161,29 +199,41 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: _products.length,
-        itemBuilder: (context, index) {
-          final product = _products[index];
-          return ListTile(
-            title: Text(product['nome']),
-            subtitle: Text('R\$ ${product['preco'].toStringAsFixed(2)}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _showAddEditProductDialog(product: product),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _deleteProduct(product['id']),
-                ),
-              ],
+      body: _products.isEmpty
+          ? const Center(child: Text('Nenhum produto encontrado nesta categoria.'))
+          : ListView.builder(
+              itemCount: _products.length,
+              itemBuilder: (context, index) {
+                final product = _products[index];
+                return ListTile(
+                  leading: product.imageUrls.isNotEmpty
+                      ? Image.network(
+                          product.imageUrls.first,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) =>
+                              const Icon(Icons.image_not_supported),
+                        )
+                      : const Icon(Icons.image_not_supported),
+                  title: Text(product.nome),
+                  subtitle: Text('R\$ ${product.preco.toStringAsFixed(2)}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _showAddEditProductDialog(product: product),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteProduct(product.id!),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

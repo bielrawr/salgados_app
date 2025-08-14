@@ -4,8 +4,13 @@ import 'package:salgados_app/services/category_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:salgados_app/firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
   runApp(

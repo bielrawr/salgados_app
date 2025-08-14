@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/categoria.dart';
-import 'dart:io';
 
 class CategoriaCard extends StatelessWidget {
   final Categoria categoria;
@@ -23,15 +22,10 @@ class CategoriaCard extends StatelessWidget {
           children: [
             Expanded(
               child: imageUrl != null && imageUrl!.isNotEmpty
-                  ? (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://')
-                      ? Image.network(imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (ctx, err, st) =>
-                              const Center(child: Icon(Icons.image_not_supported, size: 50)))
-                      : Image.file(File(imageUrl!),
-                          fit: BoxFit.cover,
-                          errorBuilder: (ctx, err, st) =>
-                              const Center(child: Icon(Icons.image_not_supported, size: 50))))
+                  ? Image.network(imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, st) =>
+                          const Center(child: Icon(Icons.image_not_supported, size: 50)))
                   : const Center(child: Icon(Icons.image, size: 50)),
             ),
             Padding(

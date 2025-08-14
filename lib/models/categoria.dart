@@ -1,14 +1,28 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Categoria {
-  final int id;
+  String? id;
   final String nome;
+  final String imageUrl;
 
-  const Categoria({required this.id, required this.nome});
+  Categoria({this.id, required this.nome, required this.imageUrl});
 
-  factory Categoria.fromMap(Map<String, dynamic> map) {
+  factory Categoria.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
     return Categoria(
-      id: map['id'],
-      nome: map['nome'],
+      id: doc.id,
+      nome: data['nome'] ?? '',
+      imageUrl: data['imageUrl'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'nome': nome,
+      'imageUrl': imageUrl,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
   }
 }
