@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:salgados_app/models/produto.dart';
 import 'package:salgados_app/services/product_firestore_service.dart';
@@ -132,43 +131,52 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
                       Navigator.of(dialogContext).pop();
 
-                      Future.microtask(() async {
-                        String? finalImageUrl;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(existingProduct == null ? 'Adicionando produto...' : 'Atualizando produto...')),
+                      );
 
-                        if (selectedImage != null) {
-                          final storageRef = FirebaseStorage.instance.ref();
-                          final imagesRef = storageRef.child('product_images/${DateTime.now().millisecondsSinceEpoch}_${selectedImage.name}');
-                          try {
+                      Future.microtask(() async {
+                        try {
+                          String? finalImageUrl;
+
+                          if (selectedImage != null) {
+                            final storageRef = FirebaseStorage.instance.ref();
+                            final imagesRef = storageRef.child('product_images/${DateTime.now().millisecondsSinceEpoch}_${selectedImage.name}');
                             await imagesRef.putFile(File(selectedImage.path));
                             finalImageUrl = await imagesRef.getDownloadURL();
-                          } on FirebaseException catch (e) {
-                            print('Error uploading image: $e');
+                          } else {
+                            finalImageUrl = existingImageUrl;
                           }
-                        } else {
-                          finalImageUrl = existingImageUrl;
-                        }
 
-                        final List<String> imageUrls = finalImageUrl != null ? [finalImageUrl] : [];
+                          final List<String> imageUrls = finalImageUrl != null ? [finalImageUrl] : [];
 
-                        if (existingProduct == null) {
-                          final newProduct = Produto(
-                            nome: productName,
-                            descricao: productDescription,
-                            preco: newPrice,
-                            categoryId: widget.categoryId,
-                            imageUrls: imageUrls,
+                          if (existingProduct == null) {
+                            final newProduct = Produto(
+                              nome: productName,
+                              descricao: productDescription,
+                              preco: newPrice,
+                              categoryId: widget.categoryId,
+                              imageUrls: imageUrls,
+                            );
+                            await _productFirestoreService.addProduct(newProduct);
+                          } else {
+                            final updatedProduct = Produto(
+                              id: existingProduct.id,
+                              nome: productName,
+                              descricao: productDescription,
+                              preco: newPrice,
+                              categoryId: widget.categoryId,
+                              imageUrls: imageUrls,
+                            );
+                            await _productFirestoreService.updateProduct(updatedProduct);
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(existingProduct == null ? 'Produto adicionado com sucesso!' : 'Produto atualizado com sucesso!')),
                           );
-                          await _productFirestoreService.addProduct(newProduct);
-                        } else {
-                          final updatedProduct = Produto(
-                            id: existingProduct.id,
-                            nome: productName,
-                            descricao: productDescription,
-                            preco: newPrice,
-                            categoryId: widget.categoryId,
-                            imageUrls: imageUrls,
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Ocorreu um erro: $e')),
                           );
-                          await _productFirestoreService.updateProduct(updatedProduct);
                         }
                       });
                     }
@@ -227,7 +235,32 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteProduct(product.id!),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext dialogContext) {
+                              return AlertDialog(
+                                title: const Text('Confirmar Exclusão'),
+                                content: Text('Você tem certeza que deseja excluir o produto "${product.nome}"?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('VOLTAR'),
+                                    onPressed: () {
+                                      Navigator.of(dialogContext).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('SIM'),
+                                    onPressed: () {
+                                      Navigator.of(dialogContext).pop();
+                                      _deleteProduct(product.id!);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ],
                   ),

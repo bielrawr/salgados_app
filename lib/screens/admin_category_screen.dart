@@ -97,38 +97,49 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
 
                       Navigator.of(dialogContext).pop();
 
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(existingCategory == null ? 'Adicionando categoria...' : 'Atualizando categoria...')),
+                      );
+
                       Future.microtask(() async {
-                        String? finalImageUrl;
-                        if (selectedImage != null) {
-                          final storageRef = FirebaseStorage.instance.ref();
-                          final imagesRef = storageRef.child('category_images/${DateTime.now().millisecondsSinceEpoch}_${selectedImage.name}');
-                          try {
+                        try {
+                          String? finalImageUrl;
+                          if (selectedImage != null) {
+                            final storageRef = FirebaseStorage.instance.ref();
+                            final imagesRef = storageRef.child('category_images/${DateTime.now().millisecondsSinceEpoch}_${selectedImage.name}');
                             await imagesRef.putFile(File(selectedImage.path));
                             finalImageUrl = await imagesRef.getDownloadURL();
-                          } on FirebaseException catch (e) {
-                            print('Error uploading image: $e');
-                          }
-                        } else {
-                          finalImageUrl = existingImageUrl;
-                        }
-
-                        if (finalImageUrl != null) {
-                          if (existingCategory == null) {
-                            final newCategory = Categoria(
-                              nome: categoryName,
-                              imageUrl: finalImageUrl,
-                            );
-                            await categoryProvider.addCategory(newCategory);
                           } else {
-                            final updatedCategory = Categoria(
-                              id: existingCategory.id,
-                              nome: categoryName,
-                              imageUrl: finalImageUrl,
-                            );
-                            await categoryProvider.updateCategory(updatedCategory);
+                            finalImageUrl = existingImageUrl;
                           }
-                        } else {
-                          print('Please select an image or ensure existing image URL is valid.');
+
+                          if (finalImageUrl != null) {
+                            if (existingCategory == null) {
+                              final newCategory = Categoria(
+                                nome: categoryName,
+                                imageUrl: finalImageUrl,
+                              );
+                              await categoryProvider.addCategory(newCategory);
+                            } else {
+                              final updatedCategory = Categoria(
+                                id: existingCategory.id,
+                                nome: categoryName,
+                                imageUrl: finalImageUrl,
+                              );
+                              await categoryProvider.updateCategory(updatedCategory);
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(existingCategory == null ? 'Categoria adicionada com sucesso!' : 'Categoria atualizada com sucesso!')),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Falha ao fazer upload da imagem.')),
+                            );
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Ocorreu um erro: $e')),
+                          );
                         }
                       });
                     }
@@ -197,7 +208,32 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteCategory(context, category.id!),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext dialogContext) {
+                                return AlertDialog(
+                                  title: const Text('Confirmar Exclusão'),
+                                  content: Text('Você tem certeza que deseja excluir a categoria "${category.nome}"? Todos os produtos desta categoria também serão excluídos.'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('VOLTAR'),
+                                      onPressed: () {
+                                        Navigator.of(dialogContext).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('SIM'),
+                                      onPressed: () {
+                                        Navigator.of(dialogContext).pop();
+                                        _deleteCategory(context, category.id!);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         ),
                       ],
                     ),
