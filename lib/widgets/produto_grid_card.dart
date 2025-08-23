@@ -17,25 +17,52 @@ class ProdutoGridCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: Image.network(produto.imageUrl, fit: BoxFit.cover, errorBuilder: (ctx, err, st) => const Icon(Icons.error)),
+            child: produto.imageUrls.isNotEmpty
+                ? Image.network(
+                    produto.imageUrls.first,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, st) => const Icon(Icons.error),
+                  )
+                : Container(
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(produto.nome, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  produto.nome,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 4),
-                Text('R\$ ${produto.preco.toStringAsFixed(2)}', style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'R\$ ${produto.preco.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_shopping_cart, color: Colors.green),
+                      onPressed: onAdicionarCarrinho,
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: onAdicionarCarrinho,
-                    style: ElevatedButton.styleFrom(padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    child: const Text('Adicionar'),
-                  ),
-                )
+                Text(
+                  produto.descricao,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12),
+                ),
               ],
             ),
           ),

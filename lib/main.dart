@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:salgados_app/services/category_provider.dart';
+import 'package:salgados_app/services/cart_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
@@ -18,6 +19,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => AuthService()),
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
+        ChangeNotifierProvider(create: (context) => CartProvider()),
       ],
       child: const SalgadosApp(),
     ),

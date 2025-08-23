@@ -36,14 +36,14 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
   }
 
   void _showAddEditCategoryDialog({required BuildContext context, Categoria? category}) {
-    String? _dialogImageUrl;
+    String? dialogImageUrl;
     if (category != null) {
       _categoryNameController.text = category.nome;
-      _dialogImageUrl = category.imageUrl;
+      dialogImageUrl = category.imageUrl;
       _selectedImageFile = null;
     } else {
       _categoryNameController.clear();
-      _dialogImageUrl = null;
+      dialogImageUrl = null;
       _selectedImageFile = null;
     }
 
@@ -66,8 +66,8 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
                   const SizedBox(height: 10),
                   _selectedImageFile != null
                       ? Image.file(File(_selectedImageFile!.path), height: 100)
-                      : (_dialogImageUrl != null
-                          ? Image.network(_dialogImageUrl!, height: 100)
+                      : (dialogImageUrl != null
+                          ? Image.network(dialogImageUrl, height: 100)
                           : const Text('Nenhuma imagem selecionada')),
                   ElevatedButton(
                     onPressed: () async {
@@ -92,7 +92,7 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
                       final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
                       final categoryName = _categoryNameController.text;
                       final selectedImage = _selectedImageFile;
-                      final existingImageUrl = _dialogImageUrl;
+                      final existingImageUrl = dialogImageUrl;
                       final existingCategory = category;
 
                       Navigator.of(dialogContext).pop();

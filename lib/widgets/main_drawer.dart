@@ -12,7 +12,7 @@ class MainDrawer extends StatelessWidget {
         children: <Widget>[
           const DrawerHeader(
             decoration: BoxDecoration(
-              color: const Color(0xFFFF6600),
+              color: Color(0xFFFF6600),
             ),
             child: Text(
               'Menu',

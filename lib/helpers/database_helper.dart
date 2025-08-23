@@ -154,7 +154,7 @@ class DatabaseHelper {
       int productId = products.first['id'];
       print("DatabaseHelper: Produto encontrado para categoria ID $categoryId: Produto ID $productId");
       // Busca a primeira imagem para esse produto
-      List<Map<String, dynamic>> images = await dbClient!.rawQuery(
+      List<Map<String, dynamic>> images = await dbClient.rawQuery(
           'SELECT caminho_imagem FROM imagens_produto WHERE produto_id = ? LIMIT 1',
           [productId]);
       if (images.isNotEmpty) {

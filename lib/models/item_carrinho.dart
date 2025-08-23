@@ -5,4 +5,6 @@ class ItemCarrinho {
   int quantidade;
 
   ItemCarrinho({required this.produto, this.quantidade = 1});
+
+  double get total => quantidade * produto.preco;
 }

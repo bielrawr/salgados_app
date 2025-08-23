@@ -49,18 +49,18 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   }
 
   void _showAddEditProductDialog({Produto? product}) {
-    String? _dialogImageUrl;
+    String? dialogImageUrl;
     if (product != null) {
       _productNameController.text = product.nome;
       _productDescriptionController.text = product.descricao;
       _productPriceController.text = product.preco.toString();
-      _dialogImageUrl = product.imageUrls.isNotEmpty ? product.imageUrls.first : null;
+      dialogImageUrl = product.imageUrls.isNotEmpty ? product.imageUrls.first : null;
       _selectedImageFile = null;
     } else {
       _productNameController.clear();
       _productDescriptionController.clear();
       _productPriceController.clear();
-      _dialogImageUrl = null;
+      dialogImageUrl = null;
       _selectedImageFile = null;
     }
 
@@ -97,8 +97,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                     const SizedBox(height: 10),
                     _selectedImageFile != null
                         ? Image.file(File(_selectedImageFile!.path), height: 100)
-                        : (_dialogImageUrl != null
-                            ? Image.network(_dialogImageUrl!, height: 100)
+                        : (dialogImageUrl != null
+                            ? Image.network(dialogImageUrl, height: 100)
                             : const Text('Nenhuma imagem selecionada')),
                     ElevatedButton(
                       onPressed: () async {
@@ -126,7 +126,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       final productDescription = _productDescriptionController.text;
                       final newPrice = double.parse(_productPriceController.text);
                       final selectedImage = _selectedImageFile;
-                      final existingImageUrl = _dialogImageUrl;
+                      final existingImageUrl = dialogImageUrl;
                       final existingProduct = product;
 
                       Navigator.of(dialogContext).pop();
