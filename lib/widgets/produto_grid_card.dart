@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/produto.dart';
+import 'cached_image_widget.dart';
 
 class ProdutoGridCard extends StatelessWidget {
   final Produto produto;
@@ -18,10 +19,9 @@ class ProdutoGridCard extends StatelessWidget {
         children: [
           Expanded(
             child: produto.imageUrls.isNotEmpty
-                ? Image.network(
-                    produto.imageUrls.first,
+                ? CachedImageWidget(
+                    imageUrl: produto.imageUrls.first,
                     fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, st) => const Icon(Icons.error),
                   )
                 : Container(
                     color: Colors.grey[200],

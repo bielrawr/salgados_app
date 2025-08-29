@@ -23,11 +23,13 @@ class AdminProdutoGridCard extends StatelessWidget {
           Expanded(
             child: Container(
               color: Colors.black.withOpacity(0.05),
-              child: Image.network(
-                produto.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (ctx, err, st) => const Center(child: Icon(Icons.error, color: Colors.red)),
-              ),
+              child: produto.primaryImageUrl != null
+                  ? Image.network(
+                      produto.primaryImageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, st) => const Center(child: Icon(Icons.error, color: Colors.red)),
+                    )
+                  : const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
             ),
           ),
           Padding(

@@ -4,7 +4,7 @@ import '../widgets/categoria_card.dart';
 import '../widgets/main_drawer.dart';
 import '../screens/cart_screen.dart';
 import '../services/category_provider.dart';
-import '../services/cart_provider.dart'; // Added this line
+import '../services/cart_provider.dart';
 import 'product_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -119,6 +119,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       drawer: const MainDrawer(),
+
       body: Consumer<CategoryProvider>(
         builder: (context, categoryProvider, child) {
           final categories = categoryProvider.categories;

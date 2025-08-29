@@ -26,10 +26,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
@@ -71,4 +68,16 @@ class DefaultFirebaseOptions {
     authDomain: 'salgadosapp-e01ce.firebaseapp.com',
     storageBucket: 'salgadosapp-e01ce.firebasestorage.app',
   );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyA2V7vw-OFfVr0jz2DjfnKYDgrW1-xYd4Q',
+    appId: '1:536744890767:ios:28ec7d214e9d0bdaac7bfa',
+    messagingSenderId: '536744890767',
+    projectId: 'salgadosapp-e01ce',
+    storageBucket: 'salgadosapp-e01ce.firebasestorage.app',
+    androidClientId: '536744890767-07a7kqmgml2o2c15d27akc3n3ftdnl54.apps.googleusercontent.com',
+    iosClientId: '536744890767-r2kfk9cqpe65t8jmefls1qbg1hq1obd7.apps.googleusercontent.com',
+    iosBundleId: 'com.example.salgadosApp',
+  );
+
 }

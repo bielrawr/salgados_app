@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/categoria.dart';
+import 'cached_image_widget.dart';
 
 class CategoriaCard extends StatelessWidget {
   final Categoria categoria;
@@ -22,10 +23,10 @@ class CategoriaCard extends StatelessWidget {
           children: [
             Expanded(
               child: imageUrl != null && imageUrl!.isNotEmpty
-                  ? Image.network(imageUrl!,
+                  ? CachedImageWidget(
+                      imageUrl: imageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, st) =>
-                          const Center(child: Icon(Icons.image_not_supported, size: 50)))
+                    )
                   : const Center(child: Icon(Icons.image, size: 50)),
             ),
             Padding(

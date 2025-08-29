@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/cart_provider.dart';
 import '../models/item_carrinho.dart';
+import 'cached_image_widget.dart';
 
 class CartItemCard extends StatelessWidget {
   final ItemCarrinho item;
@@ -26,18 +27,12 @@ class CartItemCard extends StatelessWidget {
             if (item.produto.imageUrls.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  item.produto.imageUrls.first,
+                child: CachedImageWidget(
+                  imageUrl: item.produto.imageUrls.first,
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,
-                  errorBuilder: (ctx, err, st) => Container(
-                    width: 80,
-                    height: 80,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                  ),
-                ), // Added missing parenthesis here
+                ),
               )
             else
               Container(

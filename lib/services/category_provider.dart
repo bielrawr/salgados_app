@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:salgados_app/models/categoria.dart';
 import 'package:salgados_app/services/category_firestore_service.dart';
+import '../utils/logger.dart';
 
 class CategoryProvider with ChangeNotifier {
   final CategoryFirestoreService _firestoreService = CategoryFirestoreService();
@@ -9,33 +10,33 @@ class CategoryProvider with ChangeNotifier {
   List<Categoria> get categories => _categories;
 
   CategoryProvider() {
-    print("CategoryProvider: Inicializado.");
+    AppLogger.info('CategoryProvider inicializado', 'CATEGORY');
     _listenToCategories();
   }
 
   void _listenToCategories() {
     _firestoreService.getCategories().listen((categories) {
       _categories = categories;
-      print("CategoryProvider: Categorias atualizadas: ${_categories.length} itens. Chamando notifyListeners().");
+      AppLogger.info('Categorias atualizadas: ${_categories.length} itens', 'CATEGORY');
       notifyListeners();
     });
   }
 
   Future<void> addCategory(Categoria category) async {
-    print("CategoryProvider: Adicionando categoria: ${category.nome}");
+    AppLogger.info('Adicionando categoria: ${category.nome}', 'CATEGORY');
     await _firestoreService.addCategory(category);
-    print("CategoryProvider: Categoria adicionada ao Firestore.");
+    AppLogger.info('Categoria adicionada ao Firestore', 'CATEGORY');
   }
 
   Future<void> updateCategory(Categoria category) async {
-    print("CategoryProvider: Atualizando categoria ID: ${category.id} para ${category.nome}");
+    AppLogger.info('Atualizando categoria ID: ${category.id} para ${category.nome}', 'CATEGORY');
     await _firestoreService.updateCategory(category);
-    print("CategoryProvider: Categoria atualizada no Firestore.");
+    AppLogger.info('Categoria atualizada no Firestore', 'CATEGORY');
   }
 
   Future<void> deleteCategory(String categoryId) async {
-    print("CategoryProvider: Deletando categoria ID: $categoryId");
+    AppLogger.info('Deletando categoria ID: $categoryId', 'CATEGORY');
     await _firestoreService.deleteCategory(categoryId);
-    print("CategoryProvider: Categoria deletada do Firestore.");
+    AppLogger.info('Categoria deletada do Firestore', 'CATEGORY');
   }
 }

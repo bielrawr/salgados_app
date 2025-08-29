@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:salgados_app/services/auth_service.dart';
 import '../screens/about_screen.dart';
 
 class MainDrawer extends StatelessWidget {
@@ -43,6 +45,15 @@ class MainDrawer extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pop(); // Fecha o menu
               Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AboutScreen()));
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Sair'),
+            onTap: () {
+              Navigator.of(context).pop();
+              Provider.of<AuthService>(context, listen: false).signOut();
             },
           ),
         ],

@@ -1,0 +1,155 @@
+// Regras de segurança do Firestore para o Salgados App
+// Estas regras garantem que apenas usuários autorizados possam
+// acessar e modificar dados específicos.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Função para verificar se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Função para verificar se o usuário é admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Função para verificar se é o próprio usuário
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Função para validar dados de produto
+    function isValidProduct(data) {
+      return data.keys().hasAll(['nome', 'descricao', 'preco', 'categoryId', 'isAvailable']) &&
+             data.nome is string && data.nome.size() > 0 &&
+             data.descricao is string &&
+             data.preco is number && data.preco > 0 &&
+             data.categoryId is string && data.categoryId.size() > 0 &&
+             data.isAvailable is bool &&
+             (data.imageUrls is list || !data.keys().hasAny(['imageUrls']));
+    }
+    
+    // Função para validar dados de categoria
+    function isValidCategory(data) {
+      return data.keys().hasAll(['nome', 'imageUrl']) &&
+             data.nome is string && data.nome.size() > 0 &&
+             data.imageUrl is string;
+    }
+    
+    // Função para validar dados de usuário
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+             data.email is string && data.email.size() > 0 &&
+             data.role is string && data.role in ['user', 'admin'];
+    }
+    
+    // Regras para usuários
+    match /users/{userId} {
+      // Usuários podem ler seus próprios dados
+      allow read: if isOwner(userId);
+      
+      // Apenas o próprio usuário pode criar seu documento (durante signup)
+      allow create: if isOwner(userId) && 
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.role == 'user'; // Novos usuários sempre começam como 'user'
+      
+      // Usuários podem atualizar seus próprios dados (exceto role)
+      allow update: if isOwner(userId) && 
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.role == resource.data.role; // Role não pode ser alterado pelo usuário
+      
+      // Admins podem ler todos os usuários
+      allow read: if isAdmin();
+      
+      // Admins podem atualizar roles de outros usuários
+      allow update: if isAdmin() && isValidUser(request.resource.data);
+      
+      // Ninguém pode deletar usuários (soft delete apenas)
+      allow delete: if false;
+    }
+    
+    // Regras para categorias
+    match /categories/{categoryId} {
+      // Qualquer usuário autenticado pode ler categorias
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem criar, atualizar ou deletar categorias
+      allow create, update: if isAdmin() && isValidCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    
+    // Regras para produtos
+    match /products/{productId} {
+      // Qualquer usuário autenticado pode ler produtos
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem criar, atualizar ou deletar produtos
+      allow create, update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    
+    // Regras para pedidos
+    match /orders/{orderId} {
+      // Usuários podem ler apenas seus próprios pedidos
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Usuários podem criar pedidos para si mesmos
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'items', 'total', 'status']) &&
+                       request.resource.data.items is list &&
+                       request.resource.data.total is number && request.resource.data.total > 0 &&
+                       request.resource.data.status == 'pending';
+      
+      // Apenas admins podem atualizar pedidos (para mudar status)
+      allow update: if isAdmin();
+      
+      // Ninguém pode deletar pedidos
+      allow delete: if false;
+    }
+    
+    // Regras para carrinho (dados temporários do usuário)
+    match /carts/{userId} {
+      // Apenas o próprio usuário pode acessar seu carrinho
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Regras para configurações do app (apenas leitura para usuários)
+    match /app_config/{configId} {
+      // Usuários autenticados podem ler configurações
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem modificar configurações
+      allow write: if isAdmin();
+    }
+    
+    // Regras para analytics e logs (apenas admins)
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Regras para feedback dos usuários
+    match /feedback/{feedbackId} {
+      // Usuários podem criar feedback
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Usuários podem ler apenas seu próprio feedback
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Apenas admins podem atualizar ou deletar feedback
+      allow update, delete: if isAdmin();
+    }
+    
+    // Bloqueia acesso a qualquer outra coleção não especificada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

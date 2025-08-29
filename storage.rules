@@ -1,0 +1,112 @@
+// Regras de segurança do Firebase Storage para o Salgados App
+// Estas regras controlam o acesso a arquivos e imagens armazenados.
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Função para verificar se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Função para verificar se o usuário é admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Função para verificar se é o próprio usuário
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Função para validar tipos de arquivo de imagem
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // Função para validar tamanho do arquivo (máximo 5MB)
+    function isValidImageSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+    
+    // Função para validar imagem completa
+    function isValidImage() {
+      return isValidImageType() && isValidImageSize();
+    }
+    
+    // Imagens de produtos - apenas admins podem fazer upload
+    match /products/{productId}/{imageId} {
+      // Qualquer usuário autenticado pode ler imagens de produtos
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem fazer upload, atualizar ou deletar imagens de produtos
+      allow write, delete: if isAdmin() && isValidImage();
+    }
+    
+    // Imagens de categorias - apenas admins podem fazer upload
+    match /categories/{categoryId}/{imageId} {
+      // Qualquer usuário autenticado pode ler imagens de categorias
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem fazer upload, atualizar ou deletar imagens de categorias
+      allow write, delete: if isAdmin() && isValidImage();
+    }
+    
+    // Imagens de perfil de usuários
+    match /users/{userId}/profile/{imageId} {
+      // Usuários podem ler suas próprias imagens de perfil
+      allow read: if isOwner(userId);
+      
+      // Admins podem ler qualquer imagem de perfil
+      allow read: if isAdmin();
+      
+      // Usuários podem fazer upload de suas próprias imagens de perfil
+      allow write: if isOwner(userId) && isValidImage();
+      
+      // Usuários podem deletar suas próprias imagens de perfil
+      allow delete: if isOwner(userId);
+      
+      // Admins podem deletar qualquer imagem de perfil
+      allow delete: if isAdmin();
+    }
+    
+    // Imagens temporárias (para upload antes de associar a produtos/categorias)
+    match /temp/{userId}/{imageId} {
+      // Apenas o próprio usuário pode acessar suas imagens temporárias
+      allow read, write, delete: if isOwner(userId) && isValidImage();
+      
+      // Admins podem acessar qualquer imagem temporária
+      allow read, write, delete: if isAdmin();
+    }
+    
+    // Arquivos de configuração e assets do app
+    match /app_assets/{assetId} {
+      // Qualquer usuário autenticado pode ler assets do app
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem modificar assets do app
+      allow write, delete: if isAdmin();
+    }
+    
+    // Logs e backups (apenas admins)
+    match /admin/{document=**} {
+      allow read, write, delete: if isAdmin();
+    }
+    
+    // Arquivos de feedback com imagens
+    match /feedback/{feedbackId}/{imageId} {
+      // Usuários podem fazer upload de imagens com feedback
+      allow write: if isAuthenticated() && isValidImage();
+      
+      // Admins podem ler e deletar imagens de feedback
+      allow read, delete: if isAdmin();
+    }
+    
+    // Bloqueia acesso a qualquer outro arquivo não especificado
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

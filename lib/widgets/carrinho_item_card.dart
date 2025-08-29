@@ -21,7 +21,18 @@ class CarrinhoItemCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(item.produto.imageUrl, width: 70, height: 70, fit: BoxFit.cover),
+              child: item.produto.primaryImageUrl != null
+                  ? Image.network(item.produto.primaryImageUrl!, width: 70, height: 70, fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, st) => Container(
+                        width: 70, height: 70,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.image, color: Colors.grey),
+                      ))
+                  : Container(
+                      width: 70, height: 70,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image, color: Colors.grey),
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(

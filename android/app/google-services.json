@@ -12,7 +12,20 @@
           "package_name": "com.example.salgados_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "536744890767-07a7kqmgml2o2c15d27akc3n3ftdnl54.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.salgados_app",
+            "certificate_hash": "f43928602b67769a89f40c9d21025fb784af72d6"
+          }
+        },
+        {
+          "client_id": "536744890767-o7bd9q6jrqc4hbnomhdigi09r2ueg2u7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC6DjV7_4rmNnye3pLdUyTL1TZQYV6GMSM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "536744890767-o7bd9q6jrqc4hbnomhdigi09r2ueg2u7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "536744890767-r2kfk9cqpe65t8jmefls1qbg1hq1obd7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.salgadosApp"
+              }
+            }
+          ]
         }
       }
     }

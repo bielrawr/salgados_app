@@ -1,0 +1,287 @@
+# Qodo Configuration for Flutter Salgados App
+# This configuration file defines code quality standards and review settings for the project
+
+# Project Information
+project:
+  name: "salgados_app"
+  type: "flutter"
+  description: "A Flutter application for salgados (Brazilian snacks) management with Firebase backend"
+  
+# Localization Settings
+localization:
+  # Primary language for code reviews and documentation
+  primary_language: "pt-BR"  # Portuguese (Brazil)
+  # Fallback language
+  fallback_language: "en-US"  # English (US)
+  # Supported languages for the team
+  supported_languages:
+    - "pt-BR"  # Portuguese (Brazil)
+    - "en-US"  # English (US)
+  # Code review comments language
+  review_language: "pt-BR"
+  # Documentation language
+  documentation_language: "pt-BR"
+  
+# Language and Framework Configuration
+language:
+  primary: "dart"
+  frameworks:
+    - "flutter"
+    - "firebase"
+  
+# Code Quality Settings
+quality:
+  # Dart/Flutter specific rules
+  dart:
+    # Follow official Dart style guide
+    style_guide: "effective_dart"
+    # Use flutter_lints package rules
+    lints: "flutter_lints"
+    # Enforce strong typing
+    strict_types: true
+    # Require documentation for public APIs
+    require_docs: true
+    
+  # General code quality rules
+  general:
+    # Maximum function length (lines)
+    max_function_length: 50
+    # Maximum file length (lines)
+    max_file_length: 500
+    # Maximum cyclomatic complexity
+    max_complexity: 10
+    # Require meaningful variable names
+    meaningful_names: true
+    
+# File and Directory Configuration
+paths:
+  # Source code directories
+  source:
+    - "lib/"
+    - "test/"
+  
+  # Exclude from analysis
+  exclude:
+    - "build/"
+    - ".dart_tool/"
+    - "android/"
+    - "ios/"
+    - "linux/"
+    - "macos/"
+    - "web/"
+    - "windows/"
+    - "functions/node_modules/"
+    - ".git/"
+    - ".idea/"
+    - "*.g.dart"  # Generated files
+    - "*.freezed.dart"  # Freezed generated files
+    - "*.mocks.dart"  # Mock generated files
+    - "firebase_options.dart"  # Firebase generated file
+    
+  # Test directories
+  test:
+    - "test/"
+    - "integration_test/"
+    
+# Review Configuration
+review:
+  # Automatic review triggers
+  triggers:
+    - "pull_request"
+    - "commit"
+    
+  # Review focus areas
+  focus:
+    - "security"
+    - "performance"
+    - "maintainability"
+    - "flutter_best_practices"
+    - "firebase_security"
+    
+  # Flutter-specific review points
+  flutter:
+    # Widget best practices
+    widget_guidelines: true
+    # State management patterns
+    state_management: true
+    # Performance optimizations
+    performance_checks: true
+    # Accessibility compliance
+    accessibility: true
+    
+  # Firebase-specific review points
+  firebase:
+    # Security rules validation
+    security_rules: true
+    # Firestore query optimization
+    query_optimization: true
+    # Authentication best practices
+    auth_practices: true
+    
+# Testing Configuration
+testing:
+  # Required test coverage percentage
+  coverage_threshold: 80
+  
+  # Test types to enforce
+  required_tests:
+    - "unit"
+    - "widget"
+    - "integration"
+    
+  # Test file patterns
+  patterns:
+    unit: "test/**/*_test.dart"
+    widget: "test/**/*_widget_test.dart"
+    integration: "integration_test/**/*_test.dart"
+    
+# Security Configuration
+security:
+  # Sensitive data patterns to flag
+  sensitive_patterns:
+    - "api_key"
+    - "secret"
+    - "password"
+    - "token"
+    - "private_key"
+    
+  # Firebase security checks
+  firebase:
+    # Check for hardcoded Firebase config
+    hardcoded_config: true
+    # Validate security rules
+    security_rules: true
+    # Check for exposed sensitive data
+    data_exposure: true
+    
+# Performance Configuration
+performance:
+  # Flutter performance checks
+  flutter:
+    # Check for unnecessary rebuilds
+    rebuild_optimization: true
+    # Memory leak detection
+    memory_leaks: true
+    # Image optimization
+    image_optimization: true
+    # Bundle size monitoring
+    bundle_size: true
+    
+# Documentation Requirements
+documentation:
+  # Require README updates for significant changes
+  readme_updates: true
+  
+  # API documentation requirements
+  api_docs:
+    # Require documentation for public classes
+    public_classes: true
+    # Require documentation for public methods
+    public_methods: true
+    # Require parameter documentation
+    parameters: true
+    # Require return value documentation
+    return_values: true
+    
+# Git Integration
+git:
+  # Commit message format
+  commit_format:
+    pattern: "^(feat|fix|docs|style|refactor|test|chore)(\\(.+\\))?: .{1,50}"
+    examples:
+      - "feat(auth): add user authentication"
+      - "fix(ui): resolve carousel slider issue"
+      - "docs: update README with setup instructions"
+      
+  # Branch naming conventions
+  branch_naming:
+    pattern: "^(feature|bugfix|hotfix|release)/.+"
+    examples:
+      - "feature/user-authentication"
+      - "bugfix/carousel-slider-fix"
+      - "hotfix/critical-security-patch"
+      
+# CI/CD Integration
+ci_cd:
+  # Pre-commit hooks
+  pre_commit:
+    - "dart_format"
+    - "dart_analyze"
+    - "flutter_test"
+    
+  # Build validation
+  build:
+    - "flutter_build_apk"
+    - "flutter_build_web"
+    
+# Custom Rules for this Project
+custom_rules:
+  # Salgados app specific rules
+  business_logic:
+    # Ensure proper data validation for food items
+    food_item_validation: true
+    # Check for proper price formatting
+    price_formatting: true
+    # Validate image handling
+    image_handling: true
+    
+  # Firebase integration rules
+  firebase_integration:
+    # Ensure offline capability
+    offline_support: true
+    # Validate data synchronization
+    data_sync: true
+    # Check for proper error handling
+    error_handling: true
+    
+# Notifications and Reporting
+notifications:
+  # Slack integration (if configured)
+  slack:
+    enabled: false
+    webhook_url: ""
+    
+  # Email notifications
+  email:
+    enabled: false
+    recipients: []
+    
+  # GitHub integration
+  github:
+    enabled: true
+    # Comment on PRs with review results
+    pr_comments: true
+    # Create issues for critical findings
+    create_issues: false
+    
+# Metrics and Analytics
+metrics:
+  # Track code quality trends
+  quality_trends: true
+  
+  # Performance metrics
+  performance_tracking: true
+  
+  # Test coverage tracking
+  coverage_tracking: true
+  
+  # Technical debt monitoring
+  tech_debt: true
+
+# IDE Integration
+ide:
+  # VS Code settings
+  vscode:
+    # Recommended extensions
+    extensions:
+      - "dart-code.dart-code"
+      - "dart-code.flutter"
+      - "ms-vscode.vscode-json"
+      - "bradlc.vscode-tailwindcss"
+      
+  # IntelliJ/Android Studio settings
+  intellij:
+    # Code style settings
+    code_style: "dart_official"
+    # Inspection profiles
+    inspections: "flutter_recommended"
